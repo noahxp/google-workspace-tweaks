@@ -1,0 +1,104 @@
+/* Google Chat → Slack 風格（深色模式）
+ * 注意：Google Chat 的 class 名稱是混淆過的，Google 改版後可能需要更新選擇器。
+ */
+:root {
+  --sk-top: #350d36;
+  --sk-side: #3f0e40;
+  --sk-side-hover: #350d36;
+  --sk-sel: #1164a3;
+  --sk-main: #1a1d21;
+  --sk-hover: #222529;
+  --sk-text: #d1d2d3;
+  --sk-border: #35373b;
+}
+
+/* 頂部列 */
+header.gb_Ta, .lYh0Nb { background: var(--sk-top) !important; }
+form[role=search] { background: rgba(255,255,255,.15) !important; border-radius: 8px !important; }
+
+/* 側邊欄（Slack 茄紫色） */
+c-wiz.BCL84c { background: var(--sk-side) !important; }
+c-wiz.BCL84c span, c-wiz.BCL84c div { color: rgba(255,255,255,.75); }
+c-wiz.BCL84c [role=listitem] { border-radius: 6px !important; }
+c-wiz.BCL84c [role=listitem]:hover { background: var(--sk-side-hover) !important; }
+c-wiz.BCL84c [role=listitem].qs41qe { background: var(--sk-sel) !important; }
+c-wiz.BCL84c [role=listitem].qs41qe * { color: #fff !important; }
+
+/* 主區塊：去圓角、統一 Slack 深色 */
+.RWqrJc, .jO3HBb { border-radius: 0 !important; }
+.CMcgue, .WqdKAc, .vIO7af, .Bqp03e, .bzJiD, .Bl2pUd, .knr7ee, .XganBc, .bNfiFb {
+  background: var(--sk-main) !important;
+}
+.vIO7af { border-bottom: 1px solid var(--sk-border) !important; }
+
+/* 訊息：去泡泡、全部靠左、hover 底色 */
+[role=group][data-id] .EAOoq {
+  background: transparent !important;
+  border-radius: 0 !important;
+  color: var(--sk-text) !important;
+}
+[role=group][data-id] .B8q9Gf,
+[role=group][data-id] .iKCcE { justify-content: flex-start !important; }
+[role=group][data-id] .YJxKBc,
+[role=group][data-id] .F0wyae { align-items: flex-start !important; }
+[role=group][data-id] { border-radius: 0 !important; }
+[role=group][data-id]:hover { background: var(--sk-hover) !important; }
+[role=group][data-id] img { border-radius: 6px !important; }
+
+/* 自己的訊息：每段第一則補上頭像與名字（頭像、名字由 content.js 從右上角帳戶取得）
+ * .i3b7Zb = 連續訊息的後續則（不顯示頭像） */
+[role=group].Pxe3Yd:not(.i3b7Zb) .AflJR { position: relative; }
+[role=group].Pxe3Yd:not(.i3b7Zb) .AflJR::before {
+  content: "";
+  position: absolute; left: 0; top: 18px;
+  width: 32px; height: 32px; border-radius: 6px;
+  background: var(--sk-me-avatar, none) center / cover no-repeat, #5e5e5e;
+}
+[role=group].Pxe3Yd .NGoCob::before {
+  content: var(--sk-me-name, "你");
+  font-weight: 700; color: #fff; font-size: 14px;
+  margin: 0 8px 0 10px;
+}
+/* 自己訊息的表情回應靠左 */
+[role=group][data-id] .SFMExc { justify-content: flex-start !important; }
+
+/* 引用改成 Slack 左側直線 */
+[role=group][data-id] .GoAOqc {
+  background: transparent !important;
+  border-radius: 0 !important;
+  border-left: 4px solid #616061 !important;
+}
+
+/* 跨日期分隔線：整條橫線 + 中間圓角日期標籤 */
+[role=heading].Ao1xUb { position: relative; }
+[role=heading].Ao1xUb::before {
+  content: "";
+  position: absolute; left: 0; right: 0; top: 50%;
+  border-top: 1px solid var(--sk-border);
+}
+[role=heading].Ao1xUb .cK9mzf {
+  position: relative; z-index: 1;
+  background: var(--sk-main);
+  border: 1px solid var(--sk-border);
+  border-radius: 24px;
+  padding: 2px 14px;
+  font-weight: 700;
+}
+
+/* 浮動功能選單移到訊息列最右邊
+ * 1) 讓訊息內容撐滿整列，滑鼠移到列上任何位置都會出現選單
+ * 2) 選單改以整列為定位基準，並靠右對齊
+ * 3) 拿掉 Google 原本泡泡的 hover 底色（已有整列 hover） */
+[role=group][data-id] .B8q9Gf { flex: 1 1 auto !important; max-width: none !important; }
+[role=group][data-id] .B8q9Gf > .zlPNZe,
+[role=group][data-id] .zlPNZe > .Hj5Fxb,
+[role=group][data-id] .Hj5Fxb > .YJxKBc,
+[role=group][data-id] .YJxKBc > .EAOoq {
+  flex: 1 1 auto !important; max-width: none !important; width: 100%;
+}
+[role=group][data-id] .EAOoq,
+[role=group][data-id] .Hj5Fxb,
+[role=group][data-id] .B8q9Gf { position: static !important; }
+[role=group][data-id] .UgwGlb { flex-direction: row !important; justify-content: flex-end !important; }
+[role=group][data-id] .EAOoq::before,
+[role=group][data-id] .EAOoq::after { display: none !important; }

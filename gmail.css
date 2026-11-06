@@ -1,0 +1,26 @@
+/* Gmail 信件內容 dark mode
+ * 作法：整塊信件區反相（白底→深灰、黑字→淺灰），再把圖片、影片等反相回來，
+ * 所以 HTML 信件自帶的顏色也會一起轉成深色。
+ * contrast(.8) 讓純白變成深灰（約 #1a1a1a）而不是全黑，文字也不會太刺眼。
+ *
+ * .nH.ao9  = 主視窗的分割閱讀窗格（上方清單、下方內容）
+ * .nH.aBz  = 「在新視窗中開啟」的彈出視窗信件區
+ * .G-atb   = 彈出視窗上方的工具列（只在彈出視窗套用）
+ *
+ * 切回 light：<html> 加上 data-gwt-light 屬性時，以下規則全部失效（由 gmail.js 控制）
+ */
+html:not([data-gwt-light]) .nH.ao9,
+html:not([data-gwt-light]) .nH.aBz,
+html:not([data-gwt-light]) body:has(.nH.aBz) .G-atb {
+  filter: invert(1) hue-rotate(180deg) contrast(.8) !important;
+}
+
+/* 圖片、影片等要反相回來（會略微調暗，比較不刺眼） */
+html:not([data-gwt-light]) :is(.nH.ao9, .nH.aBz, .G-atb) :is(img, video, picture, canvas, iframe, [style*="background-image"]) {
+  filter: contrast(1.25) hue-rotate(180deg) invert(1) !important;
+}
+
+/* 彈出視窗兩側的空白底色 */
+html:not([data-gwt-light]) body:has(.nH.aBz) {
+  background: #1a1a1a !important;
+}

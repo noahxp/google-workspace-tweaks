@@ -1,0 +1,46 @@
+{
+  "manifest_version": 3,
+  "name": "Google Workspace Tweaks",
+  "description": "Google Chat 改成 Slack 風格；Gmail 信件內容 dark mode（點擴充功能圖示切換）",
+  "version": "0.1.1",
+  "permissions": [
+    "storage"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "切換 Gmail 信件 dark / light"
+  },
+  "commands": {
+    "_execute_action": {
+      "description": "切換 Gmail 信件 dark / light"
+    }
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://chat.google.com/*"
+      ],
+      "css": [
+        "slackify.css"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://mail.google.com/*"
+      ],
+      "css": [
+        "gmail.css"
+      ],
+      "js": [
+        "gmail.js"
+      ],
+      "run_at": "document_start"
+    }
+  ]
+}
