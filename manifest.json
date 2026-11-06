@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "Google Workspace Tweaks",
-  "description": "Google Chat 改成 Slack 風格；Gmail 信件內容 dark mode（點擴充功能圖示切換）",
-  "version": "0.1.1",
+  "description": "Google Chat 改成 Slack 風格並在捷徑加上「未讀」；Gmail 信件內容 dark mode（點擴充功能圖示切換）",
+  "version": "0.1.2",
   "permissions": [
     "storage"
   ],
@@ -26,7 +26,8 @@
         "slackify.css"
       ],
       "js": [
-        "content.js"
+        "content.js",
+        "unread-shortcut.js"
       ],
       "run_at": "document_idle"
     },

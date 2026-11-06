@@ -11,7 +11,7 @@ A Chrome extension (Manifest V3) for Chromium-based browsers. Features:
 
 | Site | Feature |
 |---|---|
-| `chat.google.com` | Turns Google Chat into a **Slack-style** theme (dark mode): aubergine sidebar, bubble-free messages all left-aligned, avatar and name on your own messages, date separator lines, hover menu at the far right of the message row |
+| `chat.google.com` | Turns Google Chat into a **Slack-style** theme (dark mode): aubergine sidebar, bubble-free messages all left-aligned, avatar and name on your own messages, date separator lines, hover menu at the far right of the message row; an **Unread** item in the sidebar Shortcuts |
 | `mail.google.com` | Gmail **message content dark mode** (split reading pane plus the "Open in new window" pop-out), with one-click switch back to light |
 
 - UI language is Traditional Chinese. Gmail and Chat aria-labels are in Chinese too, for example `新增回應` ("Add reaction") and `Google 帳戶：` ("Google Account:"). Selectors and scripts match these Chinese strings.
@@ -25,10 +25,12 @@ google-workspace-tweaks/
 ├─ manifest.json      MV3 config; content_scripts split into a Chat group and a Gmail group
 ├─ slackify.css       Slack-style styles for Chat (all visual changes live here)
 ├─ content.js         Chat: reads your avatar and name from the account button (top right) → sets CSS variables
+├─ unread-shortcut.js Chat: adds an "Unread" (`未讀`) item to the sidebar Shortcuts
 ├─ gmail.css          Gmail message content dark mode (invert filter)
 ├─ gmail.js           Gmail: toggles <html data-gwt-light> based on the stored setting
 ├─ background.js      Clicking the extension icon → toggles dark/light and shows the OFF badge
 ├─ tools/load-test.js Load test script (not used by the extension itself)
+├─ tools/unread-shortcut.test.js  Behavior tests for unread-shortcut.js against a fake Chat page
 ├─ README.md          User-facing install and usage guide
 └─ MAINTAINING.md     This document
 ```
@@ -50,7 +52,17 @@ The only permission is `storage`. There are no host_permissions (the content_scr
 
 **Date separators**: the date heading is `[role=heading].Ao1xUb`. A `::before` draws a full-width line, and the date itself (`.cK9mzf`) gets a background, border, and rounded corners so it sits on top of the line.
 
-### 3.2 Gmail: message content dark mode (gmail.css + gmail.js + background.js)
+### 3.2 Chat: "Unread" shortcut (unread-shortcut.js + one rule in slackify.css)
+
+Google Chat has no Unread shortcut, but Home has an "Unread" (`未讀取`) switch at the top right, so the shortcut is "go to Home and turn that switch on".
+
+- **Inserting the item**: a 4th item (`#gwt-unread-shortcut`) is built right after Home (`[data-shortcut-type="1"]`) inside the Shortcuts container (`[data-shortcut-container-id]`). It reuses Google's classes (`.fqMOM` row, `.nozSKe` icon, `.Mywrue` label) so it looks native; the icon is an inline SVG because Google's icon font (`Google Symbols Subset`) has no unread glyph. It is built with DOM APIs, not `innerHTML` (Chat enforces Trusted Types). A MutationObserver puts it back whenever Google re-renders the sidebar.
+- **Clicking it**: if the switch is not on the page (not on Home), it clicks Home first, then waits for `button[role=switch][aria-label="未讀取"]` and turns it on.
+- **Clicking Home turns the filter off**. Google keeps the switch state across views, so without this, Home and Unread would show the same list after you used Unread once.
+- **Selected state**: while Home shows the unread filter, `<html data-gwt-unread>` is set and the item gets Google's selected class `.Qb1ood`; a rule in `slackify.css` removes the selected background from Home.
+- **Section height**: Google fixes the Shortcuts wrapper (parent of the container) with inline `height` / `max-height` equal to the original 3 items (84px), so a 4th item gets clipped. The script sets both to the container's real height, and watches the wrapper's `style` to fix it again after every expand (Google collapses by setting `max-height: 0`, then expands back to its stored 84px). It skips while the container is hidden (height 0), otherwise the section would stay collapsed.
+
+### 3.3 Gmail: message content dark mode (gmail.css + gmail.js + background.js)
 
 **How it works**: the whole message area gets `filter: invert(1) hue-rotate(180deg) contrast(.8)`. Then `img / video / picture / canvas / iframe / [style*=background-image]` get the reverse filter `contrast(1.25) hue-rotate(180deg) invert(1)` to restore their original colors.
 - Benefit: colors in HTML emails and every white-background component turn dark automatically, with no need to hunt down classes one by one.
@@ -91,6 +103,11 @@ Google's class names are **obfuscated** and may break whenever Google updates it
 | `.RWqrJc .jO3HBb` | Rounded corners of the main area | Obfuscated |
 | `header.gb_Ta`, `.lYh0Nb`, `form[role=search]` | Top Google bar, page background, search box | Obfuscated / Stable |
 | `img.gbii` | Account avatar at the top right (used by content.js) | Fairly stable |
+| `[data-shortcut-container-id]` | Sidebar Shortcuts container (Home / Mentions / Starred); its parent is the collapsible wrapper with inline height | Stable attribute |
+| `[data-shortcut-type="1"]` | Home shortcut (`2` = Mentions, `3` = Starred) | Stable attribute |
+| `button[role=switch][aria-label="未讀取"]` | "Unread" switch at the top of Home (`aria-checked`) | Stable |
+| `.fqMOM` / `.nozSKe` / `.Mywrue` | Shortcut row / icon / label (reused by the Unread item) | Obfuscated |
+| `.Qb1ood` (on a shortcut) | Selected shortcut | Obfuscated |
 
 ### Gmail (`mail.google.com`)
 
@@ -141,7 +158,12 @@ The user runs Claude in the Chrome side panel, and **Claude can operate the user
    # Expected output: service worker loaded: true / storage toggle ok: true
    ```
    Requires playwright and Chromium. **New headless mode is required** (the script handles this); the old headless mode does not start extensions.
-2. **Visual test**: preview and screenshot on the user's tab using the method in section 5. For Chat, check at least: a coworker's message, your own first and follow-up messages, quotes, reactions, the hover menu, and date separators. For Gmail, check: scrolling the split pane up and down to the reply button, switching dark/light, and the pop-out.
+2. **Unread shortcut behavior test** (inserting the item, switching the filter, selected state, section height):
+   ```bash
+   node --test tools/unread-shortcut.test.js
+   ```
+   Runs against a fake Chat page, not the real Chat, so it does not catch Google UI changes. Requires playwright and a local Google Chrome (it launches with `channel: 'chrome'`; no extension is loaded, so branded Chrome works).
+3. **Visual test**: preview and screenshot on the user's tab using the method in section 5. For Chat, check at least: the Unread shortcut (click it from another view, click Home after it, collapse and expand Shortcuts), a coworker's message, your own first and follow-up messages, quotes, reactions, the hover menu, and date separators. For Gmail, check: scrolling the split pane up and down to the reply button, switching dark/light, and the pop-out.
 
 ## 7. Packaging and deployment
 
@@ -160,6 +182,7 @@ If the extension is ever published to the Chrome Web Store, the version cannot b
 |---|---|
 | 0.1.0 | First official version (the user chose to start here). Includes: Chat Slack style (palette, bubble-free left-aligned messages, your own avatar and name, left-aligned reactions, straight-line quotes); Gmail message dark mode (split pane + pop-out); click the icon to toggle dark/light (no shortcut by default) |
 | 0.1.1 | Chat: date separators; hover menu moved to the far right of the message row and triggered by hovering anywhere on the row; fixed missing avatar on your own messages in some conversations (switched to `:not(.i3b7Zb)`) |
+| 0.1.2 | Chat: "Unread" item in the sidebar Shortcuts (opens Home with the unread filter on; clicking Home turns the filter off) |
 
 ## 9. Possible follow-ups (requested by or discussed with the user)
 

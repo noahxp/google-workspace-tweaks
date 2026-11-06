@@ -23,6 +23,8 @@ c-wiz.BCL84c [role=listitem] { border-radius: 6px !important; }
 c-wiz.BCL84c [role=listitem]:hover { background: var(--sk-side-hover) !important; }
 c-wiz.BCL84c [role=listitem].qs41qe { background: var(--sk-sel) !important; }
 c-wiz.BCL84c [role=listitem].qs41qe * { color: #fff !important; }
+/* 捷徑「未讀」開啟時，選取底色只留在「未讀」（data-gwt-unread 由 unread-shortcut.js 設定） */
+html[data-gwt-unread] [data-shortcut-type="1"].Qb1ood:not(:hover) { background: transparent !important; }
 
 /* 主區塊：去圓角、統一 Slack 深色 */
 .RWqrJc, .jO3HBb { border-radius: 0 !important; }
