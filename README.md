@@ -63,3 +63,7 @@ Open `chrome://extensions` and click **Remove** on the *Google Workspace Tweaks*
 | Access to `chat.google.com` and `mail.google.com` | Injects the styles and scripts on these sites only |
 
 The extension does not collect or send any data.
+
+## Maintaining
+
+See [MAINTAINING.md](MAINTAINING.md) for how the extension works, the selector reference, how to find new selectors when Google changes its UI, and how to test and package it.
