@@ -2,7 +2,7 @@
 
 A Chrome extension that tweaks Google Workspace:
 
-- **Google Chat**: a Slack-style dark theme. Messages are left-aligned without bubbles, and your own messages show your Google account avatar and name. The sidebar Shortcuts get an **Unread** item.
+- **Google Chat**: a Slack-style dark theme. Messages are left-aligned without bubbles, and your own messages show your Google account avatar and name. The message box puts the formatting, emoji, and other tools in a row below the text, like Slack. The sidebar Shortcuts get an **Unread** item.
 - **Gmail**: dark mode for message content, including HTML emails. Images and videos keep their original colors. Click the extension icon to switch between dark and light.
 
 ## Requirements

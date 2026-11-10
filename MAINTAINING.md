@@ -11,7 +11,7 @@ A Chrome extension (Manifest V3) for Chromium-based browsers. Features:
 
 | Site | Feature |
 |---|---|
-| `chat.google.com` | Turns Google Chat into a **Slack-style** theme (dark mode): aubergine sidebar, bubble-free messages all left-aligned, avatar and name on your own messages, date separator lines, hover menu at the far right of the message row; an **Unread** item in the sidebar Shortcuts |
+| `chat.google.com` | Turns Google Chat into a **Slack-style** theme (dark mode): aubergine sidebar, bubble-free messages all left-aligned, avatar and name on your own messages, date separator lines, hover menu at the far right of the message row, Slack-style composer (text on top, toolbar below); an **Unread** item in the sidebar Shortcuts |
 | `mail.google.com` | Gmail **message content dark mode** (split reading pane plus the "Open in new window" pop-out), with one-click switch back to light |
 
 - UI language is Traditional Chinese. Gmail and Chat aria-labels are in Chinese too, for example `新增回應` ("Add reaction") and `Google 帳戶：` ("Google Account:"). Selectors and scripts match these Chinese strings.
@@ -51,6 +51,13 @@ The only permission is `storage`. There are no host_permissions (the content_scr
 **Moving the hover menu to the far right**: the menu container `.UgwGlb` is `position:absolute` and was originally positioned relative to the bubble `.EAOoq`. The fix sets `.EAOoq / .Hj5Fxb / .B8q9Gf` to `position:static` so the menu is positioned relative to the whole row `.iKCcE` instead, then applies `justify-content:flex-end`. The content layer is also stretched to fill the row (`flex:1; width:100%`), so hovering anywhere on the row triggers the menu (Google detects hover on the bubble). The bubble's own hover layer `.EAOoq::after` must be hidden, or it turns into a gray bar across the whole row.
 
 **Date separators**: the date heading is `[role=heading].Ao1xUb`. A `::before` draws a full-width line, and the date itself (`.cK9mzf`) gets a background, border, and rounded corners so it sits on top of the line.
+
+**Composer (Slack layout)**: Google puts the formatting / emoji / GIF / upload / record icons on the right of the text and the `+` and send buttons outside the pill. Slack puts the text on top and every tool in one row below it, inside a single bordered box. The composer `.I0LFzc` holds three children: `.vrdOD` (`+`), `.dJ9vNe` (everything else), and `.XT3Vq` (schedule ▾ + send).
+- `.dJ9vNe` is already `flex-wrap: wrap` (the formatting toolbar `.KTfvvb` wraps into its own row above the text when it is open). The text `.BScnzc` and the icon group `.EFNTcf[jsname=bXurze]` are each set to `flex-basis: 100%`, so the icons drop to a row below the text.
+- `+` and send are outside `.dJ9vNe`, so they cannot join its rows. They are absolutely positioned at the bottom-left and bottom-right of `.I0LFzc` (which is `position: relative`), and the icon row gets `padding-left: 44px` to make room for `+`. The icon row is a fixed 40px, and the `bottom` offsets center `+` (28px) and send (32px) on it.
+- Google's pill tint is `.dJ9vNe::before` (light blue at 8% opacity, 24px radius). It is hidden; the box gets a 1px border (brighter on `:focus-within`) and the main background.
+- `.BScnzc` is also used inside message bubbles, so every composer rule is scoped with `.I0LFzc > .dJ9vNe > …`.
+- Google hides the outer `+` and shows one inside the icon row when its container is 375px wide or less (`.vrdOD.o9pA5e`, a container query). The CSS deliberately sets no `display` on `.vrdOD` so that rule keeps working; in that layout the icon row just has an empty 44px on the left. Not reached on chat.google.com at normal window sizes.
 
 ### 3.2 Chat: "Unread" shortcut (unread-shortcut.js + one rule in slackify.css)
 
@@ -108,6 +115,14 @@ Google's class names are **obfuscated** and may break whenever Google updates it
 | `button[role=switch][aria-label="未讀取"]` | "Unread" switch at the top of Home (`aria-checked`) | Stable |
 | `.fqMOM` / `.nozSKe` / `.Mywrue` | Shortcut row / icon / label (reused by the Unread item) | Obfuscated |
 | `.Qb1ood` (on a shortcut) | Selected shortcut | Obfuscated |
+| `.I0LFzc.mS1Rod` | Composer box (main view and thread panel); `position: relative`, the anchor for `+` and send | Obfuscated |
+| `.I0LFzc > .vrdOD` | Composer `+` button wrapper (`Google Workspace 工具`) | Obfuscated |
+| `.I0LFzc > .dJ9vNe` | Composer body, `flex-wrap: wrap`; its `::before` is Google's pill tint | Obfuscated |
+| `.dJ9vNe > .MiAAOe` | Composer background layer (absolute; main view only, the thread panel has none) | Obfuscated |
+| `.dJ9vNe > .KTfvvb` | Formatting toolbar row (0 height while closed) | Obfuscated |
+| `.dJ9vNe > .BScnzc` | Composer text row (the class also appears in message bubbles, so always scope it) | Obfuscated |
+| `.dJ9vNe > .EFNTcf[jsname=bXurze]` / `> .CfUpN` | Composer icon group (formatting, emoji, GIF, upload, record) / its inner row | Obfuscated |
+| `.I0LFzc > .XT3Vq` | Schedule-send ▾ + send (`傳送訊息`) buttons | Obfuscated |
 
 ### Gmail (`mail.google.com`)
 
@@ -163,7 +178,7 @@ The user runs Claude in the Chrome side panel, and **Claude can operate the user
    node --test tools/unread-shortcut.test.js
    ```
    Runs against a fake Chat page, not the real Chat, so it does not catch Google UI changes. Requires playwright and a local Google Chrome (it launches with `channel: 'chrome'`; no extension is loaded, so branded Chrome works).
-3. **Visual test**: preview and screenshot on the user's tab using the method in section 5. For Chat, check at least: the Unread shortcut (click it from another view, click Home after it, collapse and expand Shortcuts), a coworker's message, your own first and follow-up messages, quotes, reactions, the hover menu, and date separators. For Gmail, check: scrolling the split pane up and down to the reply button, switching dark/light, and the pop-out.
+3. **Visual test**: preview and screenshot on the user's tab using the method in section 5. For Chat, check at least: the Unread shortcut (click it from another view, click Home after it, collapse and expand Shortcuts), a coworker's message, your own first and follow-up messages, quotes, reactions, the hover menu, date separators, and the composer (main view and thread panel, with the formatting toolbar open and closed). For Gmail, check: scrolling the split pane up and down to the reply button, switching dark/light, and the pop-out.
 
 ## 7. Packaging and deployment
 
@@ -183,6 +198,7 @@ If the extension is ever published to the Chrome Web Store, the version cannot b
 | 0.1.0 | First official version (the user chose to start here). Includes: Chat Slack style (palette, bubble-free left-aligned messages, your own avatar and name, left-aligned reactions, straight-line quotes); Gmail message dark mode (split pane + pop-out); click the icon to toggle dark/light (no shortcut by default) |
 | 0.1.1 | Chat: date separators; hover menu moved to the far right of the message row and triggered by hovering anywhere on the row; fixed missing avatar on your own messages in some conversations (switched to `:not(.i3b7Zb)`) |
 | 0.1.2 | Chat: "Unread" item in the sidebar Shortcuts (opens Home with the unread filter on; clicking Home turns the filter off) |
+| 0.1.3 | Chat: Slack-style composer (text on top; `+`, formatting, emoji, and the other tools in a row below; send at the bottom right; one bordered box) |
 
 ## 9. Possible follow-ups (requested by or discussed with the user)
 

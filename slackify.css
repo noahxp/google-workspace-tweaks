@@ -10,6 +10,8 @@
   --sk-hover: #222529;
   --sk-text: #d1d2d3;
   --sk-border: #35373b;
+  --sk-input-border: #565856;
+  --sk-input-focus: #9a9b9c;
 }
 
 /* 頂部列 */
@@ -104,3 +106,53 @@ html[data-gwt-unread] [data-shortcut-type="1"].Qb1ood:not(:hover) { background: 
 [role=group][data-id] .UgwGlb { flex-direction: row !important; justify-content: flex-end !important; }
 [role=group][data-id] .EAOoq::before,
 [role=group][data-id] .EAOoq::after { display: none !important; }
+
+/* 輸入框改成 Slack 版面：文字在上，「+」、格式、表情符號等工具列在下，送出鍵在右下
+ * 文字與圖示都在 .dJ9vNe（flex-wrap）內，各撐滿一整列即可上下排；
+ * 「+」與送出鍵在 .dJ9vNe 外面，只能用絕對定位放到底列兩端，圖示列左邊要留出「+」的寬度。
+ * .BScnzc 也出現在訊息泡泡裡，所以一律用 > 限定在輸入框內 */
+.I0LFzc.mS1Rod {
+  border: 1px solid var(--sk-input-border);
+  border-radius: 8px !important;
+  background: var(--sk-main);
+}
+.I0LFzc.mS1Rod:focus-within { border-color: var(--sk-input-focus); }
+.I0LFzc > .dJ9vNe,
+.I0LFzc > .dJ9vNe > .MiAAOe { border-radius: 8px !important; }
+.I0LFzc > .dJ9vNe > .MiAAOe { background: var(--sk-main) !important; }
+.I0LFzc > .dJ9vNe::before { display: none !important; }
+.I0LFzc > .dJ9vNe > .BScnzc {
+  flex-basis: 100% !important;
+  min-height: 0 !important;
+  height: auto !important;
+}
+.I0LFzc > .dJ9vNe > .EFNTcf[jsname=bXurze] {
+  flex: 1 0 100% !important;
+  box-sizing: border-box;
+  padding-left: 44px;
+  margin: 0 !important;
+  height: 40px !important;
+  min-height: 0 !important;
+}
+.I0LFzc > .dJ9vNe > .EFNTcf[jsname=bXurze] > .CfUpN {
+  height: 100% !important;
+  min-height: 0 !important;
+  align-items: center !important;
+}
+.I0LFzc > .vrdOD,
+.I0LFzc > .XT3Vq { position: absolute !important; margin: 0 !important; z-index: 1; }
+.I0LFzc > .vrdOD { left: 8px; bottom: 6px; }
+.I0LFzc > .XT3Vq { right: 8px; bottom: 4px; height: 32px; align-items: center; }
+.I0LFzc > .vrdOD button {
+  width: 28px !important;
+  height: 28px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: rgba(255,255,255,.08) !important;
+  color: var(--sk-text) !important;
+}
+.I0LFzc > .XT3Vq button {
+  height: 32px !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
